@@ -15,6 +15,9 @@
 //fifo dos clientes, onde o %d--> vai ser atribuido ao pid associado a cada cliente
 #define FIFO_CLIENTE "/tmp/fifo_%d_cliente"
 
+//fifo relativo ao arbitro
+#define FIFO_ARBITRO "/tmp/fifo_arbitro"
+
 //NUMERO max de jogadores
 #define NUM_JOG 20
 
