@@ -21,14 +21,19 @@ return;
 
 void ativar_sinal_sigusr2(){
 union sigval mysigval;
+/*melhorar aqui isto utilizar o mysigval para para os inteiros certos*/
 
-        //envio do sinal ao servidor
-        sigqueue(x,SIGUSR2,mysigval);
         if(strcmp(k.comando,"exit")==0){
+            mysigval.sival_int=3;
+            sigqueue(x,SIGUSR2,mysigval);
             return;//se o comando for exit nao vamos para a funcao reencaminha pois nao vamos ler nada do servidor terminamos logo
         }
-        //este read nao sei se irá fazer
+        if(strcmp(k.comando,"login")==0){
+        mysigval.sival_int=2;
+        sigqueue(x,SIGUSR2,mysigval);
         reencaminha();
+        }
+
 return;
 }
 

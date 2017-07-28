@@ -10,7 +10,7 @@ int logs;
 char *fich;
 char fifo_pid_cli[50];
 int result_res2;
-char comando[3][50]={"","",""};//necessario para o user username password
+//char comando[3][50]={"","",""};//necessario para o user username password
 int pid_servidor;//-->pid do servidor
 
 int verifica_login(char *nomefich){
@@ -88,6 +88,18 @@ return 0;
 }
 
 
+void le(){
+
+printf("\nRecebi pedido por parte de um cliente.\n");
+        result_res2=read(desc_serv,&w,sizeof(user));
+        if(result_res2 < sizeof(user)){
+            fprintf(stderr,"\nResposta nao foi recebida na integra.\n");
+            return;
+        }
+        fprintf(stderr,"\nPedido de Validacao entregue, vamos verificar.\n");
+
+}
+
 
 void recebi_sinal(int signo, siginfo_t *info, void *extra){
 int i=0,kk=0;//variavel que permite controlar o numero de users ate chegar a 20-->usado no comando "users"
@@ -99,15 +111,9 @@ switch(signo){
     printf("\nt: %d\n",t);
     printf("\ntt: %d\n",tt);
 
-    printf("\nRecebi pedido por parte de um cliente.\n");
-    result_res2=read(desc_serv,&w,sizeof(user));
-    if(result_res2 < sizeof(user)){
-            fprintf(stderr,"\nResposta nao foi recebida na integra.\n");
-            return;
-    }
-    fprintf(stderr,"\nPedido de Validacao entregue, vamos verificar.\n");
-    if(strcmp(w.comando,"login")==0){
-        logs=verifica_login("users.txt");
+    if(info->si_value.sival_int==2){
+            le();
+            logs=verifica_login("users.txt");
             if(logs==1){//Se existe
                     //envio da resposta ao cliente
                     //necessario saber o pid do cliente, que esta inserido na estutura do usuario
@@ -173,7 +179,8 @@ switch(signo){
 
             }
     }
-    if(strcmp(w.comando,"exit")==0){
+    if(info->si_value.sival_int==3){
+        le();
         //agora o que tenho de fazer é percorrer todos os clientes logados e ver onde ta aquele com o pid enviado
         //para esse cliente-->retiro-o dos logados-->ou atraves do memset ou outra forma qualquer
         for(i=0;i<t;i++){
@@ -197,6 +204,10 @@ switch(signo){
 
     }
     }
+    if(info->si_value.sival_int==1){//recebido ola do arbitro
+        fprintf(stderr,"\nOla Arbitro.\n");
+    }
+
     break;
 
 case SIGUSR1:
@@ -207,6 +218,13 @@ case SIGUSR1:
     exit(EXIT_SUCCESS);
 
 break;
+
+case SIGALRM:
+
+        fprintf(stderr,"\nTerminado o jogo.\n");
+
+break;
+
 
 }//fecha switch
 
@@ -265,7 +283,7 @@ void envia_sigusr1_terminar(){
 union sigval sig;
 
     sigqueue(pid_servidor,SIGUSR1,sig);
-
+    //Recebe SIGUSR1 e termina
 return;
 }
 
@@ -322,6 +340,7 @@ fich=argv[1];
     sas.sa_sigaction= &recebi_sinal;
     sigaction(SIGUSR2,&sas,NULL);
     sigaction(SIGUSR1,&sas,NULL);
+    sigaction(SIGALRM,&sas,NULL);
 
     coloca_pid_servidor_fich("pid_servidor.txt");
 
@@ -368,6 +387,11 @@ fich=argv[1];
             }
             if(strcmp(comando2[0],"start")==0){
                 envia_sinal_entrar_jogo(v_din);
+                /*
+                Necessario tratar aqui do alarme do jogo
+                */
+                alarm(atoi(comando2[1]));
+
             }
             if(strcmp(comando2[0],"shutdown")==0){
                 //envio do sinal aos cli's a dizer que vou embora
@@ -375,6 +399,11 @@ fich=argv[1];
                 //recebo sinal SIGUSR1 e termino a execução apagando o FIFO do servidor
                 envia_sigusr1_terminar();
             }
+            if(strcmp(comando2[0],"stop")==0){
+                alarm(0);
+                //continuar depois aqui
+            }
+
 
 
         memset(comando,' ',sizeof(comando));//reset aos comandos definidos pelo user para nao executar sempre o mesmo até que se volte a inserir novos comandos
