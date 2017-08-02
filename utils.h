@@ -8,6 +8,7 @@
 #include<sys/stat.h>
 #include<fcntl.h>
 #include<string.h>
+#include<ncurses.h>
 
 //fifo do servidor
 #define FIFO_SERVIDOR "/tmp/fifo_servidor"
@@ -25,6 +26,7 @@
 typedef struct utilizador user, *userr;
 typedef struct resposta resp;
 typedef struct cliente cli;
+typedef struct coordenadas coorde;
 
 //estrutura para ver se um cliente digitou bem as credenciais
 struct resposta{
@@ -43,5 +45,18 @@ struct utilizador{
     resp rr;
     cli c;
 };
+
+struct coordenadas{
+    int x;//referencia ao eixo x
+    int y;//referencia ao eixo y
+};
+
+struct jogador{
+    int eq;//distincao de qual equipa é
+    int num_j;//o numero de jogador que é na equipa
+    coorde c;
+    int pid_cliente;//pode ser jogador automatico ou nao se nao for tem inerente o pid do cliente que o está a controlar
+}jog;
+
 
 #endif // UTILS_H_INCLUDED

@@ -6,6 +6,79 @@ int fds_serv,desc_cliente;//descritores
 user k;
 int x;
 
+void inicializa_ncurses(){
+
+initscr();//inicializar a variavel global stdscr
+
+    start_color();
+    clear();
+    cbreak();
+    //noecho();
+
+}
+
+
+void desenhaMarcadores(WINDOW *win) {
+    int i,j;
+    int x=0,k=0;
+        init_pair(1,COLOR_WHITE,COLOR_BLUE);
+        wattrset(win,COLOR_PAIR(1));
+        scrollok(win,TRUE);
+        wbkgd(win,COLOR_PAIR(1));
+
+    for(i=0;i<3;i++){
+        for(j=0;j<25;j++){
+            if((i==0||i==2) && (j!=0||j!=(25-1))){
+                mvwaddch(win,i,j,'-');//so na 1 e ultima linha é que se mete se '-'
+            }
+            if(j==0||j==(25-1)){
+                 mvwaddch(win,i,j,'|');//na 1 e ultima coluna metesse '|'
+            }
+            if(i==1 && x==0){
+                wprintw(win,"Equipa 0: ");
+                x++;
+            }
+        }
+    }
+
+    for(i=0;i<3;i++){
+        for(j=26;j<51;j++){
+            if(i==0 || i==2 && (j!=26||j!=(51-1))){
+                mvwaddch(win,i,j,'-');
+            }
+            if(j==26||j==(51-1)){
+                mvwaddch(win,i,j,'|');
+            }
+            if(i==1 && k==0){
+                wprintw(win,"Equipa 1: ");
+                k++;
+            }
+        }
+    }
+    //wgetch(win);
+}
+
+void desenhaCampo(WINDOW *win){
+int i,j;
+
+    init_pair(2,COLOR_BLACK,COLOR_GREEN);
+    wattrset(win,COLOR_PAIR(2));
+    scrollok(win,TRUE);
+    wbkgd(win,COLOR_PAIR(2));
+
+    for(i=0;i<21;i++){
+        for(j=0;j<51;j++){
+                        if((i==0||i==20)){
+                mvwaddch(win,i,j,'-');
+            }
+            if((j==0 && (i>0 && i<20)) ||(j==50 && (i>0 && i<20)) || (j==25 && (i>0 && i<20))){
+                mvwaddch(win,i,j,'|');
+            }
+        }
+    }
+return;
+}
+
 void reencaminha(){
     printf("\nCheguei aqui.\n");
     read(desc_cliente,&k,sizeof(user));//nao sei se vai chegar aqui bem
@@ -50,6 +123,19 @@ verifica=info->si_value.sival_int;//-->contem o inteiro passado no envio do sina
         /*
         Aqui tera de ser desenhado o campo do jogo
         */
+        WINDOW *win_campo, *win_marcadores;
+        inicializa_ncurses();
+        win_marcadores=newwin(4,51,0,0);
+        wrefresh(win_marcadores);
+        desenhaMarcadores(win_marcadores);
+        wrefresh(win_marcadores);
+        win_campo=newwin(22,51,3,3);//o cursor comeca na posicao (5,3)
+
+        desenhaCampo(win_campo);
+
+        wrefresh(win_campo);
+        wgetch(win_marcadores);//este wgetch-->depois mudar, aqui tanto pode ser win_marcadores como win_campo, mas faz sentido que seja win_campo
+        endwin();
     }
     if(verifica==2){
         fprintf(stderr,"\nRecebido sinal-->O servidor vai terminar.\n");
