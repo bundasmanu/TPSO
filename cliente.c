@@ -41,6 +41,8 @@ void desenhaMarcadores(WINDOW *win) {
         }
     }
 
+    mvwprintw(win,1,11,"%d",0);//-->depois colocar aqui a estrutura resultados com o parametro resultado esquerda
+
     for(i=0;i<3;i++){
         for(j=26;j<51;j++){
             if(i==0 || i==2 && (j!=26||j!=(51-1))){
@@ -55,6 +57,7 @@ void desenhaMarcadores(WINDOW *win) {
             }
         }
     }
+    mvwprintw(win,1,37,"%d",0);//-->depois colocar aqui a estrutura resultados com o parametro resultado direita
     //wgetch(win);
 }
 
@@ -68,10 +71,23 @@ int i,j;
 
     for(i=0;i<21;i++){
         for(j=0;j<51;j++){
-                        if((i==0||i==20)){
+
+            if((i==0||i==20)){//linha grande de cima e baixo (horizontais)
                 mvwaddch(win,i,j,'-');
             }
-            if((j==0 && (i>0 && i<20)) ||(j==50 && (i>0 && i<20)) || (j==25 && (i>0 && i<20))){
+            if((j==0 && ((i>0 && i<6)||(i>14 && i<20))) ||(j==50 && ((i>0 && i<6)||(i>14 && i<20))) || (j==25 && (i>0 && i<20))){//linhas verticais lado esquerdo e direito
+                mvwaddch(win,i,j,'|');
+            }
+            if(j==25 && i==10){//meio campo
+                mvwaddch(win,i,j,'*');
+            }
+            if((j==0 && i>5 && i<15)||(j==50 && i>5 && i<15)){//balizas
+                mvwaddch(win,i,j,'+');
+            }
+            if((i==5 && j>=1 && j<=4) || (i==15 && j>=1 && j<=4) || (i==5 && j<=49 && j>=46) || (i==15 && j<=49 && j>=46)){//marcas horizontais pequena area
+                mvwaddch(win,i,j,'-');
+            }
+            if((i>=6 && i<=14 && j==5) || (i>=6 && i<=14 && j==45)){
                 mvwaddch(win,i,j,'|');
             }
         }
@@ -102,9 +118,14 @@ union sigval mysigval;
             return;//se o comando for exit nao vamos para a funcao reencaminha pois nao vamos ler nada do servidor terminamos logo
         }
         if(strcmp(k.comando,"login")==0){
-        mysigval.sival_int=2;
-        sigqueue(x,SIGUSR2,mysigval);
-        reencaminha();
+            mysigval.sival_int=2;
+            sigqueue(x,SIGUSR2,mysigval);
+            reencaminha();
+        }
+        if(strcmp(k.comando,"logout")==0){
+            mysigval.sival_int=4;
+            sigqueue(x,SIGUSR2,mysigval);
+            return;
         }
 
 return;
@@ -249,6 +270,16 @@ read(ler_pid_serv,&x,sizeof(int));
                         exit(EXIT_SUCCESS);
                      }
                 }
+                if(strcmp(k.comando,"logout")==0){
+                    /*
+                    Aqui o que tem de ser feito é enviar um sinal ao servidor com o pid do cliente
+                    e do lado do servidor este tem de colocar o logado a 0
+                    */
+                    k.c.pids=getpid();//já tem, mas colocar outra vez nao faz mal
+                    write(fds_serv,&k,sizeof(user));
+                    ativar_sinal_sigusr2();
+                }
+
             memset(k.comando,'\0',sizeof(k.comando));
     }
 

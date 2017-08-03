@@ -208,6 +208,22 @@ switch(signo){
         fprintf(stderr,"\nOla Arbitro.\n");
     }
 
+    if(info->si_value.sival_int==4){//logout do usuario
+        /*
+        Aqui é necessario fazer o read do que foi escrito pelo cliente (ou seja ler o pid associado ao cliente)
+        e procura-lo na matriz, e colocar o valor (logado) da matriz a 0
+        */
+        read(desc_serv,&w,sizeof(user));
+        for(i=0;i<t-tt;i++){
+            if(w.c.pids==v_din[i].c.pids){
+                fprintf(stderr,"\nLogout efetuado pelo user: %d",w.c.pids);
+                v_din[i].rr.logado=0;
+            }
+
+        }
+
+    }
+
     break;
 
 case SIGUSR1:
@@ -312,6 +328,17 @@ int NDEFESAS,NAVANCADOS;
 return;
 }
 
+void lista_matriz(userr n){
+int i;
+
+    fprintf(stderr,"\nUsers (logados ou nao).\n");
+    for(i=0;i<t-tt;i++){
+        fprintf(stderr,"%d\n",n[i].c.pids);
+    }
+
+return;
+}
+
 
 int main(int argc, char *argv[]){
 int res;
@@ -402,6 +429,9 @@ fich=argv[1];
             if(strcmp(comando2[0],"stop")==0){
                 alarm(0);
                 //continuar depois aqui
+            }
+            if(strcmp(comando2[0],"matriz")==0){
+                lista_matriz(v_din);
             }
 
 

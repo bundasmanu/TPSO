@@ -27,6 +27,8 @@ typedef struct utilizador user, *userr;
 typedef struct resposta resp;
 typedef struct cliente cli;
 typedef struct coordenadas coorde;
+typedef struct jogador jog;
+typedef struct resultados result;
 
 //estrutura para ver se um cliente digitou bem as credenciais
 struct resposta{
@@ -56,7 +58,11 @@ struct jogador{
     int num_j;//o numero de jogador que é na equipa
     coorde c;
     int pid_cliente;//pode ser jogador automatico ou nao se nao for tem inerente o pid do cliente que o está a controlar
-}jog;
+};
 
+struct resultados{
+    int resultado_eq_esq;
+    int resultado_eq_dir;
+};
 
 #endif // UTILS_H_INCLUDED
