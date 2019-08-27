@@ -9,6 +9,8 @@
 #include<fcntl.h>
 #include<string.h>
 #include<ncurses.h>
+#include<pthread.h>
+#include<time.h>
 
 //fifo do servidor
 #define FIFO_SERVIDOR "/tmp/fifo_servidor"
@@ -19,16 +21,24 @@
 //fifo relativo ao arbitro
 #define FIFO_ARBITRO "/tmp/fifo_arbitro"
 
+//fifo teclas
+#define FIFO_TECLAS "/tmp/fifo_teclas_%d"
+
 //NUMERO max de jogadores
-#define NUM_JOG 20
+#define NUM_JOG 18
+
+
+int NAVANCADOS=2;
+int NDEFESAS=2;
 
 //typedef's das funcoes
 typedef struct utilizador user, *userr;
 typedef struct resposta resp;
 typedef struct cliente cli;
 typedef struct coordenadas coorde;
-typedef struct jogador jog;
-typedef struct resultados result;
+typedef struct jogador joga, *jogar;
+typedef struct comandos comand;
+typedef struct bol bola;
 
 //estrutura para ver se um cliente digitou bem as credenciais
 struct resposta{
@@ -46,6 +56,7 @@ struct utilizador{
     char comando[50];
     resp rr;
     cli c;
+    int t;//verificar a existencia do jogo
 };
 
 struct coordenadas{
@@ -53,16 +64,22 @@ struct coordenadas{
     int y;//referencia ao eixo y
 };
 
+struct bol{
+    coorde co;
+    int possui;
+};
+
 struct jogador{
     int eq;//distincao de qual equipa é
     int num_j;//o numero de jogador que é na equipa
     coorde c;
     int pid_cliente;//pode ser jogador automatico ou nao se nao for tem inerente o pid do cliente que o está a controlar
+    bola b;
 };
 
-struct resultados{
-    int resultado_eq_esq;
-    int resultado_eq_dir;
+struct comandos{
+    int key;
+    int pidss;
 };
 
 #endif // UTILS_H_INCLUDED

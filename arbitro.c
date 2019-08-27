@@ -10,26 +10,41 @@ para o servidor saber distinguir o cliente do arbitro
 Só depois do servidor enviar sinal que se pode dar inicio é que se dá o inicio
 */
 int pid_s;
+char msg[50];
 
-void envia_info_server(){
+void envia_ola_server(){
 union sigval sig;
 
   if(access(FIFO_SERVIDOR,F_OK)==0){//o servidor encontra se a correr
         sig.sival_int=1;//ola
         sigqueue(pid_s,SIGUSR2,sig);
   }
-  else{
-    return;
-  }
-
 
 }
 
+void envia_info_server(){
+union sigval sig;
 
+  if(strcmp(msg,"termina")==0){/*envio sinal ao servidor para que o jogo acabe*/
+        sig.sival_int=6;
+        fprintf(stderr,"\nEnviado.\n");
+        sigqueue(pid_s,SIGUSR2,sig);
+  }
+
+    if(strcmp(msg,"falta")==0){
+        sig.sival_int=7;
+        sigqueue(pid_s,SIGUSR2,sig);
+    }
+
+    if(strcmp(msg,"intervalo")==0){
+        sig.sival_int=8;
+        sigqueue(pid_s,SIGUSR2,sig);
+    }
+
+}
 
 int main(int argc,char *argv[]){
 int res,desc_arbitro,desc_s,ler_fich_pid_s;
-char msg[50];
 
 struct sigaction sass;
 sass.sa_flags=SA_SIGINFO;
@@ -66,15 +81,24 @@ if(desc_s==-1){
     fprintf(stderr,"\nErro ao abrir o FIFO do servidor.\n");
 }
 
-envia_info_server();
+envia_ola_server();
 
     while(1){
             printf("\n>\n");
             scanf(" %[^\n]",msg);
-            if(strcmp(msg,"termina")==0){
+            if(strcmp(msg,"sair")==0){
                 close(desc_arbitro);
                 unlink(FIFO_ARBITRO);
                 exit(EXIT_FAILURE);
+            }
+            if(strcmp(msg,"termina")==0){
+                envia_info_server();
+            }
+            if(strcmp(msg,"falta")==0){
+                envia_info_server();
+            }
+            if(strcmp(msg,"intervalo")==0){
+                envia_info_server();
             }
     }
 
